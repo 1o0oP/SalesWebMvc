@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using SalesWebMvc.Data;
+using SalesWebMvc.Services;
 
 namespace SalesWebMvc
 {
@@ -35,7 +36,9 @@ namespace SalesWebMvc
               options.UseMySql(Configuration.GetConnectionString("SalesWebMvcContext"), builder =>
                 builder.MigrationsAssembly("SalesWebMvc")));
 
-      services.AddScoped<SeedingService>(); // Registra nosso serviços no sistema de injeção de dependência
+      // Serviços acrescentados ao sistema de injeção de dependência
+      services.AddScoped<SeedingService>(); // Serviço para popular a base de dados
+      services.AddScoped<SellerService>(); // Serviços do vendedor
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
