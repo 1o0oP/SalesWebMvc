@@ -19,5 +19,18 @@ namespace SalesWebMvc.Controllers
       HashSet<Seller> ss = _sellerService.FindAll();
       return View(ss);
     }
+
+    public IActionResult Create()
+    {
+      return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken] // Evita envio de dados maliciosos
+    public IActionResult Create(Seller sl)
+    {
+      _sellerService.Insert(sl);
+      return RedirectToAction(nameof(Index));
+    }
   }
 }

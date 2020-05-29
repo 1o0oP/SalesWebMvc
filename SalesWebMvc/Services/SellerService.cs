@@ -20,5 +20,11 @@ namespace SalesWebMvc.Services
     {
       return _context.Seller.ToHashSet();
     }
+
+    public void Insert(Seller sl)
+    {
+      _context.Add(sl);
+      _context.SaveChanges();
+    }
   }
 }
