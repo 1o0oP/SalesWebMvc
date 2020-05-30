@@ -17,13 +17,13 @@ namespace SalesWebMvc.Controllers
       _departmentService = departmentService;
     }
 
-    public IActionResult Index()
+    public IActionResult Index() // Resposta ao clicar em "Seller" no menu Nav
     {
-      HashSet<Seller> ss = _sellerService.FindAll();
-      return View(ss);
+      HashSet<Seller> sellers = _sellerService.FindAll();
+      return View(sellers);
     }
 
-    public IActionResult Create()
+    public IActionResult Create() // Resposta ao clicar em "Create New" na página "/Sellers"
     {
       var departments = _departmentService.FindAll();
       var viewModel = new SellerFormViewModel { Departments = departments };
@@ -32,13 +32,13 @@ namespace SalesWebMvc.Controllers
 
     [HttpPost]
     [ValidateAntiForgeryToken] // Evita envio de dados maliciosos
-    public IActionResult Create(SellerFormViewModel sl)
+    public IActionResult Create(Seller seller) // Resposta eo clicar em "Create" na página "/Sellers/Create"
     {
-      _sellerService.Insert(sl.Seller);
+      _sellerService.Insert(seller);
       return RedirectToAction(nameof(Index));
     }
 
-    public IActionResult Delete(int? id)
+    public IActionResult Delete(int? id) // Resposta ao clicar em "Delete" na página "/Sellers"
     {
       if (id == null)
       {
@@ -60,13 +60,13 @@ namespace SalesWebMvc.Controllers
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Delete(int id)
+    public IActionResult Delete(int id) // Resposta ao clicar em "Delete" na página "/Sellers/Delete"
     {
       _sellerService.Remove(id); // Remove o vendedor do banco de dados
       return RedirectToAction(nameof(Index)); // Retorna para a página anterior
     }
 
-    public IActionResult Details(int? id)
+    public IActionResult Details(int? id) // Resposta ao clicar em "Details" na página "/Sellers"
     {
       if (id == null)
       {
@@ -86,6 +86,52 @@ namespace SalesWebMvc.Controllers
       }
     }
 
-    //public IActionResult Edit()
+    public IActionResult Edit(int? id) // Resposta ao clicar em "Edit" na página "/Sellers"
+    {
+      if (id == null)
+      {
+        return NotFound();
+      }
+      else
+      {
+        var seller = _sellerService.FindById(id.Value);
+        if (seller == null)
+        {
+          return NotFound();
+        }
+        else
+        {
+          List<Department> departments = _departmentService.FindAll();
+          SellerFormViewModel viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+          return View(viewModel);
+        }
+      }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken] // Evita envio de dados maliciosos
+    public IActionResult Edit(int id, Seller seller) // Resposta ao clicar em "Save" na página "/Sellers/Edit"
+    {
+      if (id != seller.Id)
+      {
+        return BadRequest();
+      }
+      else
+      {
+        try
+        {
+          _sellerService.Update(seller); // Pode lançar excessões
+          return RedirectToAction(nameof(Index));
+        }
+        catch (NotFoundException e)
+        {
+          return NotFound();
+        }
+        catch (DbConcurrencyException e)
+        {
+          return BadRequest();
+        }
+      }
+    }
   }
 }
