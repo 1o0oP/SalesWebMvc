@@ -1,4 +1,6 @@
-﻿using SalesWebMvc.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MySqlConnector.Logging;
+using SalesWebMvc.Data;
 using SalesWebMvc.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,8 +29,9 @@ namespace SalesWebMvc.Services
 
     public Seller FindById(int id)
     {
-      return _context.Seller.Where(sl => sl.Id == id).Single();
+      return _context.Seller.Include(sl => sl.Department).Where(sl => sl.Id == id).Single();
       // Forma mais curta: _context.Seller.FirstOrDefault(sl => sl.Id == id);
+      // Include: Olha o DepartmentId -> Abre a tabela departments -> Encontra pelo DepartmentId -> Retorna para sl
     }
 
     public void Remove(int id)
