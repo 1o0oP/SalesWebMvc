@@ -24,5 +24,17 @@ namespace SalesWebMvc.Services
       _context.Add(sl);
       _context.SaveChanges();
     }
+
+    public Seller FindById(int id)
+    {
+      return _context.Seller.Where(sl => sl.Id == id).Single();
+      // Forma mais curta: _context.Seller.FirstOrDefault(sl => sl.Id == id);
+    }
+
+    public void Remove(int id)
+    {
+      _context.Seller.Remove(_context.Seller.Find(id)); // Encontra pela chave primária
+      _context.SaveChanges(); // Efetiva mudança no banco de dados
+    }
   }
 }
