@@ -36,6 +36,17 @@ namespace SalesWebMvc.Controllers
     [ValidateAntiForgeryToken] // Evita envio de dados maliciosos
     public IActionResult Create(Seller seller) // Resposta eo clicar em "Create" na página "/Sellers/Create"
     {
+      if (!ModelState.IsValid) // Valida as entradas sem precisar de JavaScript
+      {
+        var departments = _departmentService.FindAll();
+        var viewModel = new SellerFormViewModel
+        {
+          Seller = seller,
+          Departments = departments
+        };
+        return View(viewModel);
+      }
+      // Caso contrário
       _sellerService.Insert(seller);
       return RedirectToAction(nameof(Index));
     }
@@ -114,6 +125,17 @@ namespace SalesWebMvc.Controllers
     [ValidateAntiForgeryToken] // Evita envio de dados maliciosos
     public IActionResult Edit(int id, Seller seller) // Resposta ao clicar em "Save" na página "/Sellers/Edit"
     {
+      if (!ModelState.IsValid) // Valida as entradas sem precisar de JavaScript
+      {
+        var departments = _departmentService.FindAll();
+        var viewModel = new SellerFormViewModel
+        {
+          Seller = seller,
+          Departments = departments
+        };
+        return View(viewModel);
+      }
+      // Caso contrário
       if (id != seller.Id)
       {
         return RedirectToAction(nameof(Error), new { message = "Ids mismatch" });
