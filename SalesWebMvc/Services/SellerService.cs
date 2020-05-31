@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SalesWebMvc.Data;
 using SalesWebMvc.Models;
+using SalesWebMvc.Services.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,8 +37,15 @@ namespace SalesWebMvc.Services
 
     public async Task RemoveAsync(int id)
     {
-      _context.Seller.Remove(await _context.Seller.FindAsync(id)); // Encontra pela chave primária
-      await _context.SaveChangesAsync(); // Efetiva mudança no banco de dados
+      try
+      {
+        _context.Seller.Remove(await _context.Seller.FindAsync(id)); // Encontra pela chave primária
+        await _context.SaveChangesAsync(); // Efetiva mudança no banco de dados
+      }
+      catch (DbUpdateException e) // Erro da chave estrangeira em nível de serviço
+      { // Trata a excessão quando tentamos apagar dados interligados do banco de dados
+        throw new IntegrityException(e.Message);
+      }
     }
 
     public async Task UpdateAsync(Seller seller)

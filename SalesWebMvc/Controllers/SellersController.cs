@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
 using SalesWebMvc.Models;
 using SalesWebMvc.Models.ViewModels;
 using SalesWebMvc.Services;
+using SalesWebMvc.Services.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -76,8 +78,15 @@ namespace SalesWebMvc.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id) // Resposta ao clicar em "Delete" na página "/Sellers/Delete"
     {
-      await _sellerService.RemoveAsync(id); // Remove o vendedor do banco de dados
-      return RedirectToAction(nameof(Index)); // Retorna para a página anterior
+      try
+      {
+        await _sellerService.RemoveAsync(id); // Remove o vendedor do banco de dados
+        return RedirectToAction(nameof(Index)); // Retorna para a página anterior
+      }
+      catch (IntegrityException e) // Erro da chave extrangeira em nível de controlador
+      { // Trantando o erro que surge ao tentarmos deletar dados interligados do banco de dados
+        return RedirectToAction(nameof(Error), new { message = e.Message });
+      }
     }
 
     public async Task<IActionResult> Details(int? id) // Resposta ao clicar em "Details" na página "/Sellers"
