@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace SalesWebMvc.Services
+namespace SalesWebMvc.Services.Exceptions
 {
-  public class NotFoundException : ApplicationException
-  {
-    public NotFoundException(string message) : base(message)
+    public class NotFoundException : ApplicationException
     {
+        public NotFoundException(string message) : base(message)
+        {
+        }
     }
-  }
 }

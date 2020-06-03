@@ -1,72 +1,69 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SalesWebMvc.Data;
-using SalesWebMvc.Models;
-using SalesWebMvc.Services.Exceptions;
+﻿using SalesWebMvc.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using SalesWebMvc.Services.Exceptions;
+using SalesWebMvc.Data;
 
 namespace SalesWebMvc.Services
 {
-  public class SellerService
-  {
-    private readonly SalesWebMvcContext _context;
-
-    public SellerService(SalesWebMvcContext context)
+    public class SellerService
     {
-      _context = context;
-    }
-    
-    public async Task<List<Seller>> FindAllAsync() 
-    { // Busca a tabela Sellers no banco de dados de forma assíncrona
-      return await _context.Seller.ToListAsync();
-    }
+        private readonly SalesWebMvcContext _context;
 
-    public async Task InsertAsync(Seller sl)
-    {
-      _context.Add(sl);
-      await _context.SaveChangesAsync();
-    }
-
-    public async Task<Seller> FindByIdAsync(int id)
-    {
-      return await _context.Seller.Include(sl => sl.Department).FirstOrDefaultAsync(sl => sl.Id == id);
-      // Outra forma: _context.Seller.Include(sl => sl.Department).Where(sl => sl.Id == id).Single();
-      // Include: Olha o DepartmentId -> Abre a tabela departments -> Encontra pelo DepartmentId -> Retorna para sl?
-    }
-
-    public async Task RemoveAsync(int id)
-    {
-      try
-      {
-        _context.Seller.Remove(await _context.Seller.FindAsync(id)); // Encontra pela chave primária
-        await _context.SaveChangesAsync(); // Efetiva mudança no banco de dados
-      }
-      catch (DbUpdateException e) // Erro da chave estrangeira em nível de serviço
-      { // Trata a excessão quando tentamos apagar dados interligados do banco de dados
-        throw new IntegrityException(e.Message);
-      }
-    }
-
-    public async Task UpdateAsync(Seller seller)
-    {
-      if (! await _context.Seller.AnyAsync(sl => sl.Id == seller.Id))
-      {
-        throw new NotFoundException("Id not found");
-      }
-      else
-      {
-        try
+        public SellerService(SalesWebMvcContext context)
         {
-          _context.Update(seller);
-          await _context.SaveChangesAsync();
+            _context = context;
         }
-        catch (DbUpdateConcurrencyException e)
+
+        public async Task<List<Seller>> FindAllAsync()
         {
-          throw new DbConcurrencyException(e.Message);
-          // Trata excessões da camada de dados na camada de serviços
+            return await _context.Seller.ToListAsync();
         }
-      }
+
+        public async Task InsertAsync(Seller obj)
+        {
+            _context.Add(obj);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Seller> FindByIdAsync(int id)
+        {
+            return await _context.Seller.Include(obj => obj.Department).FirstOrDefaultAsync(obj => obj.Id == id);
+        }
+
+        public async Task RemoveAsync(int id)
+        {
+            try
+            {
+                var obj = await _context.Seller.FindAsync(id);
+                _context.Seller.Remove(obj);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                throw new IntegrityException("Can't delete seller because he/she has sales");
+            }
+        }
+
+        public async Task UpdateAsync(Seller obj)
+        {
+            bool hasAny = await _context.Seller.AnyAsync(x => x.Id == obj.Id);
+            if (!hasAny)
+            {
+                throw new NotFoundException("Id not found");
+            }
+            try
+            {
+                _context.Update(obj);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                throw new DbConcurrencyException(e.Message);
+            }
+        }
     }
-  }
 }
